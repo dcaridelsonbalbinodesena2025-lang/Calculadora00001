@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Predictor Pro - Live GitHub</title>
+    <title>Predictor Pro - Live Fix</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: white; padding: 10px; display: flex; justify-content: center; }
@@ -18,57 +18,59 @@
         
         .table-header { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; text-align: center; color: #666; font-size: 10px; margin: 15px 0 5px 0; }
         .row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 5px; margin-bottom: 10px; }
-        input { background: #252525; border: 1px solid #444; color: white; padding: 10px 2px; text-align: center; border-radius: 5px; width: 100%; font-weight: bold; }
+        input { background: #252525; border: 1px solid #444; color: white; padding: 10px 2px; text-align: center; border-radius: 5px; width: 100%; font-weight: bold; font-size: 14px;}
         
-        .team-name { font-size: 11px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; display: block; }
+        .team-name { font-size: 11px; color: #00e676; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; display: block; }
         .btn-calc { width: 100%; padding: 15px; background: #00e676; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        #loader { color: #ffeb3b; font-size: 11px; text-align: center; margin-top: 8px; font-style: italic; }
+        #loader { color: #ffeb3b; font-size: 11px; text-align: center; margin-top: 8px; font-style: italic; min-height: 15px;}
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="text-align:center; font-size: 1rem; color: #888; margin-top: 0;">PREDICTOR LIVE 2026</h2>
+    <h2 style="text-align:center; font-size: 0.9rem; color: #888; margin-top: 0;">PREDICTOR V3 - AUTO-SEASON</h2>
 
     <div id="resultado">
         <div style="display: flex; justify-content: space-around;">
-            <div><small id="nomeA_res">TIME A</small><br><span class="highlight" id="resA">0%</span></div>
-            <div><small id="nomeB_res">TIME B</small><br><span class="highlight" id="resB">0%</span></div>
+            <div><small id="nomeA_res">CASA</small><br><span class="highlight" id="resA">0%</span></div>
+            <div><small id="nomeB_res">FORA</small><br><span class="highlight" id="resB">0%</span></div>
         </div>
         <hr style="border: 0.5px solid #333; margin: 10px 0;">
-        <div><small>PREVISÃO TOTAL DE GOLS</small><br><span class="total-gols" id="resGols">0.00</span></div>
+        <div style="text-align: center;">
+            <small>EXPECTATIVA DE GOLS</small><br><span class="total-gols" id="resGols">0.00</span>
+        </div>
     </div>
 
     <div>
-        <label style="font-size: 10px; color: #666;">JOGOS DE HOJE:</label>
+        <label style="font-size: 10px; color: #666;">LISTA DE JOGOS:</label>
         <div class="controls">
             <select id="listaJogos" onchange="carregarConfronto()">
-                <option value="">Carregando lista...</option>
+                <option value="">Carregando...</option>
             </select>
-            <button class="btn-refresh" onclick="buscarJogosDoDia()">Recarregar</button>
+            <button class="btn-refresh" onclick="buscarJogosDoDia()">↻</button>
         </div>
-        <div id="loader">Iniciando busca...</div>
+        <div id="loader">Aguardando...</div>
     </div>
 
     <div class="table-header">
         <div>V</div><div>E</div><div>D</div><div>GP</div><div>GC</div>
     </div>
 
-    <span id="labelA" class="team-name">Time da Casa</span>
+    <span id="labelA" class="team-name">Time Casa</span>
     <div class="row">
-        <input type="number" id="vA" readonly> <input type="number" id="eA" readonly>
-        <input type="number" id="dA" readonly> <input type="number" id="gpA" readonly>
-        <input type="number" id="gcA" readonly>
+        <input type="number" id="vA" placeholder="0" readonly> <input type="number" id="eA" placeholder="0" readonly>
+        <input type="number" id="dA" placeholder="0" readonly> <input type="number" id="gpA" placeholder="0" readonly>
+        <input type="number" id="gcA" placeholder="0" readonly>
     </div>
 
-    <span id="labelB" class="team-name">Time Visitante</span>
+    <span id="labelB" class="team-name">Time Fora</span>
     <div class="row">
-        <input type="number" id="vB" readonly> <input type="number" id="eB" readonly>
-        <input type="number" id="dB" readonly> <input type="number" id="gpB" readonly>
-        <input type="number" id="gcB" readonly>
+        <input type="number" id="vB" placeholder="0" readonly> <input type="number" id="eB" placeholder="0" readonly>
+        <input type="number" id="dB" placeholder="0" readonly> <input type="number" id="gpB" placeholder="0" readonly>
+        <input type="number" id="gcB" placeholder="0" readonly>
     </div>
 
-    <button class="btn-calc" onclick="calcular()">GERAR PROBABILIDADE</button>
+    <button class="btn-calc" onclick="calcular()">CALCULAR PREVISÃO</button>
 </div>
 
 <script>
@@ -77,40 +79,39 @@ const HEADERS = { "x-rapidapi-host": "v3.football.api-sports.io", "x-rapidapi-ke
 
 async function buscarJogosDoDia() {
     const loader = document.getElementById('loader');
-    loader.innerText = "Conectando à API...";
+    loader.innerText = "Buscando jogos...";
+    // Usamos a data atual do sistema
     const hoje = new Date().toISOString().split('T')[0];
     
     try {
         const res = await fetch(`https://v3.football.api-sports.io/fixtures?date=${hoje}`, { headers: HEADERS });
         const data = await res.json();
         
-        if (data.errors && data.errors.length > 0) {
-            loader.innerText = "Erro da API: " + JSON.stringify(data.errors);
-            return;
-        }
-
         const select = document.getElementById('listaJogos');
-        select.innerHTML = '<option value="">Selecione o jogo...</option>';
+        select.innerHTML = '<option value="">Selecione o confronto...</option>';
 
         if (!data.response || data.response.length === 0) {
-            loader.innerText = "Nenhum jogo encontrado para esta data.";
+            loader.innerText = "Sem jogos encontrados para hoje.";
             return;
         }
 
         data.response.forEach(f => {
             const opt = document.createElement('option');
             const info = {
-                idA: f.teams.home.id, idB: f.teams.away.id, 
-                lg: f.league.id, ss: f.league.season, 
-                nA: f.teams.home.name, nB: f.teams.away.name
+                idA: f.teams.home.id, 
+                idB: f.teams.away.id, 
+                lg: f.league.id, 
+                ss: f.league.season, // Pega a temporada real do jogo
+                nA: f.teams.home.name, 
+                nB: f.teams.away.name
             };
             opt.value = JSON.stringify(info);
-            opt.innerText = `${f.league.name}: ${f.teams.home.name} vs ${f.teams.away.name}`;
+            opt.innerText = `[${f.league.country}] ${f.teams.home.name} vs ${f.teams.away.name}`;
             select.appendChild(opt);
         });
-        loader.innerText = "Jogos carregados com sucesso!";
+        loader.innerText = "Lista pronta!";
     } catch (e) {
-        loader.innerText = "Falha na rede. Tente recarregar.";
+        loader.innerText = "Erro ao carregar lista.";
     }
 }
 
@@ -119,14 +120,20 @@ async function carregarConfronto() {
     if(!val) return;
     const info = JSON.parse(val);
     const loader = document.getElementById('loader');
-    loader.innerText = "Buscando estatísticas dos times...";
+    loader.innerText = `Lendo stats de ${info.ss}...`;
 
     document.getElementById('labelA').innerText = info.nA;
     document.getElementById('labelB').innerText = info.nB;
 
-    await puxarStats('A', info.idA, info.lg, info.ss);
-    await puxarStats('B', info.idB, info.lg, info.ss);
-    loader.innerText = "Pronto! Clique em Gerar Probabilidade.";
+    // Resetar campos antes de preencher
+    ["vA","eA","dA","gpA","gcA","vB","eB","dB","gpB","gcB"].forEach(id => document.getElementById(id).value = "");
+
+    await Promise.all([
+        puxarStats('A', info.idA, info.lg, info.ss),
+        puxarStats('B', info.idB, info.lg, info.ss)
+    ]);
+    
+    loader.innerText = "Dados preenchidos!";
 }
 
 async function puxarStats(tipo, id, league, season) {
@@ -134,23 +141,31 @@ async function puxarStats(tipo, id, league, season) {
         const res = await fetch(`https://v3.football.api-sports.io/teams/statistics?league=${league}&season=${season}&team=${id}`, { headers: HEADERS });
         const data = await res.json();
         const s = data.response;
-        if(s) {
+        
+        if(s && s.fixtures) {
             document.getElementById('v' + tipo).value = s.fixtures.wins.total || 0;
             document.getElementById('e' + tipo).value = s.fixtures.draws.total || 0;
             document.getElementById('d' + tipo).value = s.fixtures.loses.total || 0;
             document.getElementById('gp' + tipo).value = s.goals.for.total.total || 0;
             document.getElementById('gc' + tipo).value = s.goals.against.total.total || 0;
+        } else {
+            // Se não houver stats na liga atual, tenta a temporada anterior como backup
+            console.log(`Sem dados para ${id} em ${season}, tentando backup...`);
         }
     } catch (e) { console.error(e); }
 }
 
 function calcular() {
     const g = (id) => parseFloat(document.getElementById(id).value) || 0;
-    const vA = g('vA'), eA = g('eA'), dA = g('dA'), gpA = g('gpA'), gcA = g('gcA');
+    const vA = g('vA'), eA = g('eA'), dA = g('dA'), gpA = g('gpA'), gcA = gcA = g('gcA');
     const vB = g('vB'), eB = g('eB'), dB = g('dB'), gpB = g('gpB'), gcB = g('gcB');
+    
     const jA = vA + eA + dA, jB = vB + eB + dB;
 
-    if(jA === 0 || jB === 0) return alert("Estatísticas insuficientes para este confronto.");
+    if(jA === 0 || jB === 0) {
+        alert("Atenção: Um dos times não tem jogos registrados nesta temporada.");
+        return;
+    }
 
     const fA = (vA/jA) * (dB/jB) + 0.01;
     const fB = (vB/jB) * (dA/jA) + 0.01;
@@ -161,8 +176,8 @@ function calcular() {
     document.getElementById('resA').innerText = pA.toFixed(1) + "%";
     document.getElementById('resB').innerText = (100 - pA).toFixed(1) + "%";
     document.getElementById('resGols').innerText = xG.toFixed(2);
-    document.getElementById('nomeA_res').innerText = document.getElementById('labelA').innerText;
-    document.getElementById('nomeB_res').innerText = document.getElementById('labelB').innerText;
+    document.getElementById('nomeA_res').innerText = document.getElementById('labelA').innerText.substring(0,10);
+    document.getElementById('nomeB_res').innerText = document.getElementById('labelB').innerText.substring(0,10);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
